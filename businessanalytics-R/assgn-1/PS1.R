@@ -1,10 +1,25 @@
-setwd("/home/navarurh/documents/utd/bawr/lec1/")
+#home directory definition
+setwd("C:\\Users\\navar\\Documents\\UTD\\assignments\\businessanalytics-R\\assgn-1")
+#packages used for the assignment
 library(data.table)
 library(DBI)
 library(RSQLite)
 library(tidyverse)
+library(ggplot2)
 
-## Read the BWGHT.csv example into the variable churn
+
+#sql connection 
+connector <- function(table_name){
+  con <- SQLite() %>% dbConnect('wooldridge.db')
+  con %>% dbListTables
+  read_table <- con %>% dbReadTable(table_name) %>% data.table
+  con %>% dbReadTable(paste(table_name,'_labels',sep=""))
+  con %>% dbDisconnect
+  return(read_table)
+}
+
+wage <- connector('wage1')
+
 con <- SQLite() %>% dbConnect('wooldridge.db')
 con %>% dbListTables
 wage <- con %>% dbReadTable('wage1') %>% data.table
@@ -85,8 +100,8 @@ sd(meap$exppp) #1091.89
 
 #--------------------------------------------------------------------------------------#
 # (vii) Suppose School A spends $6,000 per student and School B spends $5,500 per
-# student. By what percentage does School A’s spending exceed School B’s? Com-
-#   pare this to 100 · [log(6,000) – log(5,500)], which is the approximation percent-
+# student. By what percentage does School A? spending exceed School B?? Com-
+#   pare this to 100 · [log(6,000) ?log(5,500)], which is the approximation percent-
 #   age difference based on the difference in the natural logs. (See Section A.4 in
 #                                                                Appendix A.)
 
@@ -104,17 +119,17 @@ summary(k401)
 #   tionship between participation in a 401(k) pension plan and the generosity of the plan.
 # The variable prate is the percentage of eligible workers with an active account; this is
 # the variable we would like to explain. The measure of generosity is the plan match rate,
-# mrate. This variable gives the average amount the firm contributes to each worker’s
+# mrate. This variable gives the average amount the firm contributes to each workers
 # plan for each $1 contribution by the worker. For example, if mrate 5 0.50, then a $1
 # contribution by the worker is matched by a 50¢ contribution by the firm.
-# (i) 	Find the average participation rate and the average match rate in the sample of
+# (i)Find the average participation rate and the average match rate in the sample of
 # plans.
 mean(k401$prate) # 87.36% - average participation rate
 mean(k401$mrate) # 0.732% - average match rate
 
 # (ii) Now, estimate the simple regression equation
-#  prate
-#     5 b̂ 0 1 b̂ 1 mrate,
+# prate
+# ?   5 b?0 1 b?1 mrate,
 # and report the results along with the sample size and R-squared.
 
 x <- lm(prate~mrate,k401)
