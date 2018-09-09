@@ -44,8 +44,6 @@ StdClass      CHAR(2)       NULL,
 StdGPA        NUMBER(3,2)  NULL,
 CONSTRAINT StudentPk PRIMARY KEY (StdNo) );
 
-drop table Enrollment
-
 
 CREATE TABLE Enrollment(
 OfferNo       NUMBER(10)       NOT NULL,

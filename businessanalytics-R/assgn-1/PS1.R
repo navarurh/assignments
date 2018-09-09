@@ -389,7 +389,7 @@ nrow(htv[which(htv$abil < -3.967094),]) #15
 #plotting
 plot7 <- ggplot(htv,aes(x=abil, y=educ)) 
 plot7 <- plot7 + geom_point(shape=16,color = '#00D7F9', size = 1)
-plot7 <- plot7 + geom_line(data = htv,aes(x=abil,y = 11.91157 + 0.401462*abil1 + 0.050599*I(abil1^2)),color='#FF5757',size = 1.5)
+plot7 <- plot7 + geom_line(data = htv,aes(x=abil,y = 11.91157 + 0.401462*abil + 0.050599*I(abil^2)),color='#FF5757',size = 1.5)
 plot7 <- plot7 + theme(panel.background = element_rect(fill = "white", colour = "black",size = 0.5, linetype = "solid"),
                        panel.grid.major = element_line(size = 0.5, linetype = 'solid',colour = "gray"), 
                        panel.grid.minor = element_line(size = 0.25, linetype = 'solid',colour = "gray"))
