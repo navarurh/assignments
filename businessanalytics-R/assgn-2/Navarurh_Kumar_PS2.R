@@ -10,9 +10,6 @@ setwd("/home/navarurh/documents/assignments/businessanalytics-R/assgn-2/")
 library(data.table)
 library(DBI)
 library(RSQLite)
-library(ggplot2)
-library(car)
-
 
 #sql connection function to ease life
 datafetch <- function(table_name){
@@ -53,20 +50,22 @@ summary(model2)
 #iii. clsize and faculty have a poor joint significance
 #     fstat for joint significance is 0.9484 and p value is 0.39
 #     they will be significant only at a very high significance level
-#iv.  factors like faculty ranking, faculty quality, demographic info about entering class, etc could have an impact on the salary
-#     there are quite a few factors that can affect post law school salaries
+#iv.  "studfac" ratio from the data set feels like it could have an impact
+#     also factors relating to the faculty itself like faculty ranking, faculty quality, etc could also have an impact on the salary
 
 law <- datafetch("lawsch85")
-law1 <- law
-law1$LSAT[which(is.na(law1$LSAT))] <- mean(law$LSAT)
-law1$GPA[which(is.na(law1$GPA))] <- mean(law$GPA)
-model1 <- lm(data = law, log(salary) ~ LSAT + GPA + log(libvol) + log(cost) + rank)
+law1 <- law[which(!is.na(law$LSAT) & !is.na(law$GPA)),]
+model1 <- lm(data = law1, log(salary) ~ LSAT + GPA + log(libvol) + log(cost) + rank)
 summary(model1)
-linearHypothesis(model1,c("LSAT=0","GPA=0"))
-model2 <- lm(data = law1, log(salary) ~ LSAT + GPA + log(libvol) + log(cost) + rank + clsize + faculty)
+model2 <- lm(data = law1, log(salary) ~ log(libvol) + log(cost) + rank)
 summary(model2)
-linearHypothesis(model2,c("clsize=0","faculty=0"))
-
+anova(model1,model2)
+law2 <- law[which(!is.na(law$clsize) & !is.na(law$faculty)),]
+model3 <- lm(data = law2, log(salary) ~ LSAT + GPA + log(libvol) + log(cost) + rank + clsize + faculty)
+summary(model3)
+model4 <- lm(data = law2, log(salary) ~ LSAT + GPA + log(libvol) + log(cost) + rank)
+summary(model4)
+anova(model3,model4)
 
 #Question 2.3
 
