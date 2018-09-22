@@ -18,19 +18,6 @@ CrsDesc       VARCHAR(50)   NOT NULL,
 CrsUnits      BIGINT       NULL,
 CONSTRAINT CoursePK PRIMARY KEY (CourseNo) );
 
-CREATE TABLE Offering (
-OfferNo       BIGINT       NOT NULL,
-CourseNo      CHAR(6)       NOT NULL,
-OffTerm       CHAR(6)       NOT NULL,
-OffYear       BIGINT       NOT NULL,
-OffLocation   VARCHAR(30)   NULL,
-OffTime       VARCHAR(10)   NULL,
-FacNo         CHAR(11)      NULL,
-OffDays       CHAR(4)       NULL,
-PRIMARY KEY (OfferNo),
-FOREIGN KEY (CourseNo) REFERENCES Course,
-FOREIGN KEY (FacNo) REFERENCES Faculty);
-
 CREATE TABLE Student (
 StdNo         CHAR(11)      NOT NULL,
 StdFirstName  VARCHAR(30)   NOT NULL,
@@ -47,9 +34,19 @@ CREATE TABLE Enrollment(
 OfferNo       BIGINT       NOT NULL,
 StdNo         CHAR(11)      NOT NULL,
 EnrGrade      DECIMAL(3,2)  NULL,
-CONSTRAINT EnrollmentPK PRIMARY KEY (OfferNo, StdNo),
-CONSTRAINT OfferingFK FOREIGN KEY (OfferNo) REFERENCES Offering ON DELETE CASCADE,
-CONSTRAINT StudentFK FOREIGN KEY (StdNo) REFERENCES Student ON DELETE CASCADE);
+CONSTRAINT EnrollmentPK PRIMARY KEY (OfferNo, StdNo));
+
+CREATE TABLE Offering (
+OfferNo       BIGINT       NOT NULL,
+CourseNo      CHAR(6)       NOT NULL,
+OffTerm       CHAR(6)       NOT NULL,
+OffYear       BIGINT       NOT NULL,
+OffLocation   VARCHAR(30)   NULL,
+OffTime       VARCHAR(10)   NULL,
+FacNo         CHAR(11)      NULL,
+OffDays       CHAR(4)       NULL,
+PRIMARY KEY (OfferNo));
+
 
 
 INSERT INTO Faculty VALUES ('543210987','VICTORIA','EMMANUEL','BOTHELL','WA','MS','PROF',120000.0,NULL,DATE '1998-04-15','98011-2242');
