@@ -235,7 +235,7 @@ coeftest(model15, vcov = vcovHC(model15, type="HC1"))
 #           dep = usd_eu_conv - no causalities
 #Q3.6.15    
 
-btcf <- read.csv('btc_data_final.csv',header = T,stringsAsFactors = F)
+btcf <- read.csv('navarurh_kumar_btc_data.csv',header = T,stringsAsFactors = F)
 
 #3.6.4
 ts.plot(btcf$btc_price)
