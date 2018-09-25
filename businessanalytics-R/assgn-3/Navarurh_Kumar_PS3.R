@@ -16,6 +16,8 @@ library(lmtest)
 library(plyr)
 library(tseries)
 library(broom)
+library(reshape)
+library(vars)
 
 #sql connection function to ease life
 datafetch <- function(table_name){
@@ -221,36 +223,17 @@ coeftest(model15, vcov = vcovHC(model15, type="HC1"))
 #Q3.6.9     line 314-315
 #Q3.6.10    running the arima model for different AR and MA values gives a min at AR = 7 and MA = 5 with an AIC of -1198.845
 #Q3.6.11    line 338-343
-#Q3.6.12    the periodogram shows too many spikes, unclear as to what seasonality the data has
-#Q3.6.13    
-#Q3.6.14    
+#Q3.6.12    the periodogram shows too many spikes, data might have seasonality but it is not visible to the naked eye
+#Q3.6.13    the periodogram has not really changed from the original, no new insights into seasonality
+#Q3.6.14    the model with p=1 has the lowest AIC hence we choose that for our VAR model
+#           we see the following granger causalities for different dependents
+#           dep = btc_price   - no causalities
+#           dep = sp500       - gold price at 1st diff level has some significance
+#           dep = gold        - texas_oil and usd_eu_conv have an effect on the gold prices 
+#                               [understandable as currency strength is interralted with country's gold reserves]
+#           dep = texas_oil   - no causalities
+#           dep = usd_eu_conv - no causalities
 #Q3.6.15    
-
-# btc_price <- read.csv('BTC_USD Bitfinex Historical Data.csv',stringsAsFactors = F,header = T)
-# sp500 <- read.csv('SP500.csv',stringsAsFactors = F,header = T)
-# gold <- read.csv('GOLDAMGBD228NLBM.csv',stringsAsFactors = F,header = T)
-# texas_oil <- read.csv('DCOILWTICO.csv',stringsAsFactors = F,header = T)
-# usdeu_conv <- read.csv('DEXUSEU.csv',stringsAsFactors = F,header = T)
-# 
-# btc_price$Date <- as.Date(btc_price$Date,format = '%b %d, %Y')
-# sp500$DATE <- as.Date(sp500$DATE)
-# texas_oil$DATE <- as.Date(texas_oil$DATE)
-# usdeu_conv$DATE <- as.Date(usdeu_conv$DATE)
-# gold$DATE <- as.Date(gold$DATE)
-# sp500$SP500 <- as.numeric(sp500$SP500)
-# gold$GOLDAMGBD228NLBM <- as.numeric(gold$GOLDAMGBD228NLBM)
-# texas_oil$DCOILWTICO <- as.numeric(texas_oil$DCOILWTICO)
-# usdeu_conv$DEXUSEU <- as.numeric(usdeu_conv$DEXUSEU)
-# btc_price$Price <- as.numeric(gsub(',','',btc_price$Price))
-# 
-# colnames(btc_price)[1] <- 'DATE'
-# btc_price <- btc_price[c(1:2)]
-# 
-# btc <- join_all(list(btc_price,sp500,gold,texas_oil,usdeu_conv), by = 'DATE', type = 'full')
-# btcf <- na.omit(btc)
-# 
-# btcf <- btcf[order(btcf$DATE),]
-# colnames(btcf) <- c('date','btc_price','sp500','gold','texas_oil','usd_eu_conv')
 
 btcf <- read.csv('btc_data_final.csv',header = T,stringsAsFactors = F)
 
@@ -349,3 +332,33 @@ library(TSA)
 periodogram(log(btcf$btc_price))
 periodogram(diff(log(btcf$btc_price)))
 
+#3.6.13
+btcf$date <- as.Date(btcf$date)
+btcf$dow <- weekdays(btcf$date)
+btcfw <- btcf[c(2,7)]
+btcfw$dummy <- 1
+btcfw <- reshape(btcfw, idvar = "btc_price", timevar = "dow", direction = "wide")
+btcfw[is.na(btcfw)] <- 0
+colnames(btcfw)[2:6] <- c('tu','we','th','fr','mo')
+model19 <- lm(data = btcfw, diff(log(btc_price)) ~ tu[2:416] + we[2:416] + th[2:416] + fr[2:416] + mo[2:416])
+summary(model19)
+periodogram(model19$residuals)
+
+#3.6.14
+diff_jp <- function(x){
+  n <- nrow(x)
+  return(x[2:n,]-x[1:n-1,])
+}
+btc_var <- btcf %>% dplyr::select(btc_price, sp500, gold, texas_oil, usd_eu_conv) %>% log %>% diff_jp
+VAR(btc_var,p=1,type="both") %>% AIC
+VAR(btc_var,p=2,type="both") %>% AIC
+VAR(btc_var,p=3,type="both") %>% AIC
+model20 <- VAR(btc_var,p=1,type="both")
+summary(model20)
+
+#3.6.15
+val<- predict(model20, n.ahead = 30)
+val
+plot(val[[1]]$btc_price)
+y <- as.data.frame(val[[1]]$btc_price)
+plot(y$fcst)
