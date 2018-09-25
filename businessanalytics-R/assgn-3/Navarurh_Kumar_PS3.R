@@ -290,9 +290,6 @@ ts.plot(btcf$gold)
 ts.plot(btcf$texas_oil)
 ts.plot(btcf$usd_eu_conv)
 ts.plot(diff(btcf$btc_price))
-
-ts.plot(diff(log(btcf$btc_price)))
-
 ts.plot(diff(btcf$sp500))
 ts.plot(diff(btcf$gold))
 ts.plot(diff(btcf$texas_oil))
