@@ -13,6 +13,9 @@ library(DBI)
 library(RSQLite)
 library(sandwich)
 library(lmtest)
+library(plyr)
+library(tseries)
+library(broom)
 
 #sql connection function to ease life
 datafetch <- function(table_name){
@@ -206,22 +209,143 @@ coeftest(model15, vcov = vcovHC(model15, type="HC1"))
 #Q3.6.1     NA
 #Q3.6.2     NA
 #Q3.6.3     NA
-#Q3.6.4
-#Q3.6.5
-#Q3.6.6
-#Q3.6.7
-#Q3.6.8
-#Q3.6.9
-#Q3.6.10
-#Q3.6.11
-#Q3.6.12
-#Q3.6.13
-#Q3.6.14
-#Q3.6.15
+#Q3.6.4     line 248-252
+#Q3.6.5     a normal ols gives the following relation
+#           btc_price = -41590 + 10.95*sp500 - 2.993*gold -56.18*texas_oil + 22760*usd_eu_conv
+#           gives negative predictions alongwith horrible predictions for recent btc prices
+#           plot(model16$residuals) is all over the place and pretty much follows the btc price trend in terms of shape
+#Q3.6.6     each of the 5 series are level-stationary after taking 1st differences
+#Q3.6.7     the ols with diffs at level1 for all variables gives the following
+#           diff(btc_price) = 4.024 + 0.932*diff(sp500) + 0.588*diff(gold) - 0.37*diff(texas_oil) - 502.5*diff(usd_eu_conv)
+#Q3.6.8     line 301-311
+#Q3.6.9     line 314-315
+#Q3.6.10    running the arima model for different AR and MA values gives a min at AR = 7 and MA = 5 with an AIC of -1198.845
+#Q3.6.11    line 338-343
+#Q3.6.12    the periodogram shows too many spikes, unclear as to what seasonality the data has
+#Q3.6.13    
+#Q3.6.14    
+#Q3.6.15    
 
-btc_price <- read.csv('BTC_USD Bitfinex Historical Data.csv',stringsAsFactors = F,header = T)
-sp500 <- read.csv('SP500.csv',stringsAsFactors = F,header = T)
-gold <- read.csv('GOLDAMGBD228NLBM.csv',stringsAsFactors = F,header = T)
-texas_oil <- read.csv('DCOILWTICO.csv',stringsAsFactors = F,header = T)
-usdeu_conv <- read.csv('DEXUSEU.csv',stringsAsFactors = F,header = T)
+# btc_price <- read.csv('BTC_USD Bitfinex Historical Data.csv',stringsAsFactors = F,header = T)
+# sp500 <- read.csv('SP500.csv',stringsAsFactors = F,header = T)
+# gold <- read.csv('GOLDAMGBD228NLBM.csv',stringsAsFactors = F,header = T)
+# texas_oil <- read.csv('DCOILWTICO.csv',stringsAsFactors = F,header = T)
+# usdeu_conv <- read.csv('DEXUSEU.csv',stringsAsFactors = F,header = T)
+# 
+# btc_price$Date <- as.Date(btc_price$Date,format = '%b %d, %Y')
+# sp500$DATE <- as.Date(sp500$DATE)
+# texas_oil$DATE <- as.Date(texas_oil$DATE)
+# usdeu_conv$DATE <- as.Date(usdeu_conv$DATE)
+# gold$DATE <- as.Date(gold$DATE)
+# sp500$SP500 <- as.numeric(sp500$SP500)
+# gold$GOLDAMGBD228NLBM <- as.numeric(gold$GOLDAMGBD228NLBM)
+# texas_oil$DCOILWTICO <- as.numeric(texas_oil$DCOILWTICO)
+# usdeu_conv$DEXUSEU <- as.numeric(usdeu_conv$DEXUSEU)
+# btc_price$Price <- as.numeric(gsub(',','',btc_price$Price))
+# 
+# colnames(btc_price)[1] <- 'DATE'
+# btc_price <- btc_price[c(1:2)]
+# 
+# btc <- join_all(list(btc_price,sp500,gold,texas_oil,usdeu_conv), by = 'DATE', type = 'full')
+# btcf <- na.omit(btc)
+# 
+# btcf <- btcf[order(btcf$DATE),]
+# colnames(btcf) <- c('date','btc_price','sp500','gold','texas_oil','usd_eu_conv')
+
+btcf <- read.csv('btc_data_final.csv',header = T,stringsAsFactors = F)
+
+#3.6.4
+ts.plot(btcf$btc_price)
+ts.plot(btcf$sp500)
+ts.plot(btcf$gold)
+ts.plot(btcf$texas_oil)
+ts.plot(btcf$usd_eu_conv)
+
+#3.6.5
+model16 <- lm(data = btcf, btc_price ~ sp500 + gold + texas_oil + usd_eu_conv)
+summary(model16)
+predict.lm(model16)[1]
+predict.lm(model16)[1146]
+plot(model16$residuals)
+
+#3.6.6
+kpss.test(btcf$btc_price,null="Level")
+kpss.test(btcf$btc_price,null="Trend")
+kpss.test(diff(btcf$btc_price),null="Level")
+
+kpss.test(btcf$sp500,null="Level")
+kpss.test(btcf$sp500,null="Trend")
+kpss.test(diff(btcf$sp500),null="Level")
+
+kpss.test(btcf$gold,null="Level")
+kpss.test(btcf$gold,null="Trend")
+kpss.test(diff(btcf$gold),null="Level")
+
+kpss.test(btcf$texas_oil,null="Level")
+kpss.test(btcf$texas_oil,null="Trend")
+kpss.test(diff(btcf$texas_oil),null="Level")
+
+kpss.test(btcf$usd_eu_conv,null="Level")
+kpss.test(btcf$usd_eu_conv,null="Trend")
+kpss.test(diff(btcf$usd_eu_conv),null="Level")
+
+ts.plot(diff(btcf$btc_price))
+ts.plot(diff(btcf$sp500))
+ts.plot(diff(btcf$gold))
+ts.plot(diff(btcf$texas_oil))
+ts.plot(diff(btcf$usd_eu_conv))
+
+#3.6.7
+model17 <- lm(data = btcf, diff(btc_price) ~ diff(sp500) + diff(gold) + diff(texas_oil) + diff(usd_eu_conv)) 
+summary(model17)
+
+#3.6.8
+btcf <- btcf[which(btcf$date >= '2017-01-01'),]
+ts.plot(btcf$btc_price)
+ts.plot(btcf$sp500)
+ts.plot(btcf$gold)
+ts.plot(btcf$texas_oil)
+ts.plot(btcf$usd_eu_conv)
+ts.plot(diff(btcf$btc_price))
+
+ts.plot(diff(log(btcf$btc_price)))
+
+ts.plot(diff(btcf$sp500))
+ts.plot(diff(btcf$gold))
+ts.plot(diff(btcf$texas_oil))
+ts.plot(diff(btcf$usd_eu_conv))
+
+#3.6.9
+acf(diff(btcf$btc_price))
+pacf(diff(btcf$btc_price))
+
+acf(diff(log(btcf$btc_price)))
+pacf(diff(log(btcf$btc_price)))
+
+#3.6.10
+arima_pq <- 8
+outp <- matrix(0L,(arima_pq+1)^2,3)
+pos <- 1
+for(i in 0:arima_pq){
+  for(j in 0:arima_pq) {
+    tryCatch({aic <- arima(log(btcf$btc_price),c(i,1,j))$aic},error=function(err){aic<-9999.99})
+    outp[pos,1:3] <- c(i,j,aic)
+    pos <- pos + 1
+  }
+}
+outp <- data.frame(outp)
+colnames(outp) <- c('p','q','AIC')
+
+#3.6.11
+library(forecast)
+model18 <- arima(log(btcf$btc_price),c(7,1,5))
+steps <- 30
+future <- forecast(model18,h=steps)
+plot(future)
+plot(future,xlim=c(417-steps,417+steps),ylim=c(7.5,10.5))
+
+#3.6.12
+library(TSA)
+periodogram(log(btcf$btc_price))
+periodogram(diff(log(btcf$btc_price)))
 
