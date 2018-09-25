@@ -357,7 +357,7 @@ model20 <- VAR(btc_var,p=1,type="both")
 summary(model20)
 
 #3.6.15
-val<- predict(model20, n.ahead = 30)
+val <- predict(model20, n.ahead = 30)
 val
 plot(val[[1]]$btc_price)
 y <- as.data.frame(val[[1]]$btc_price)
