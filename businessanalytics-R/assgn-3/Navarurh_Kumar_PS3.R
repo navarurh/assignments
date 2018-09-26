@@ -233,7 +233,9 @@ coeftest(model15, vcov = vcovHC(model15, type="HC1"))
 #                               [understandable as currency strength is interralted with country's gold reserves]
 #           dep = texas_oil   - no causalities
 #           dep = usd_eu_conv - no causalities
-#Q3.6.15    
+#Q3.6.15    The predictions for bitcoin prices from the two models look fairly similar
+#           The var model shows a super steady almost horizontal trend - line365-366
+#           The arima model also shows a similar trend for the next 30 days as per line 326
 
 btcf <- read.csv('navarurh_kumar_btc_data.csv',header = T,stringsAsFactors = F)
 
@@ -350,12 +352,17 @@ btc_var <- btcf %>% dplyr::select(btc_price, sp500, gold, texas_oil, usd_eu_conv
 VAR(btc_var,p=1,type="both") %>% AIC
 VAR(btc_var,p=2,type="both") %>% AIC
 VAR(btc_var,p=3,type="both") %>% AIC
+VAR(btc_var,p=64,type="both") %>% AIC
 model20 <- VAR(btc_var,p=1,type="both")
 summary(model20)
+causality(model20,cause = 'sp500')$Granger
+causality(model20,cause = 'gold')$Granger
+causality(model20,cause = 'texas_oil')$Granger
+causality(model20,cause = 'usd_eu_conv')$Granger
 
 #3.6.15
-val <- predict(model20, n.ahead = 30)
-val
-plot(val[[1]]$btc_price)
-y <- as.data.frame(val[[1]]$btc_price)
-plot(y$fcst)
+
+prd <- predict(model20, n.ahead = 30, ci = 0.95, dumvar = NULL)
+print(prd)
+plot(prd, "single")
+plot(prd, "single",xlim=c(417-30,417+30),ylim=c(-0.015,0.015))
