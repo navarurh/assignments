@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS  salary_history
 (
     emp_num     bigint(4)   not null,
     sal_from    datetime not null,
-    sal_end     datetime not null,
+    sal_end     datetime,
     sal_amount  decimal(16) not null
 );
 
