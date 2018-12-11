@@ -38,12 +38,12 @@ invoice <- invoice[!duplicated(invoice$INV_NUM),]
 vendor <- vendor[which(vendor$VEND_NAME != ""),]
 colnames(invoice)[5] <- "EMP_NUM"
 
-employee$EMP_HIREDATE <- as.POSIXct(employee$EMP_HIREDATE, origin = "1900-01-01")
-salary_history$SAL_FROM <- as.POSIXct(salary_history$SAL_FROM, origin = "1900-01-01")
-salary_history$SAL_END[which(salary_history$SAL_END == " - ")] <- 0
+employee$EMP_HIREDATE <- as.Date(employee$EMP_HIREDATE, origin = "1900-01-01")
+invoice$INV_DATE <- as.Date(invoice$INV_DATE, origin = "1900-01-01")
+salary_history$SAL_FROM <- as.Date(salary_history$SAL_FROM, origin = "1900-01-01")
+salary_history$SAL_END[which(salary_history$SAL_END == " - ")] <- NA
 salary_history$SAL_END <- as.integer(salary_history$SAL_END)
-salary_history$SAL_END <- as.POSIXct(salary_history$SAL_END, origin = "1900-01-01")
-invoice$INV_DATE <- as.POSIXct(invoice$INV_DATE, origin = "1900-01-01")
+salary_history$SAL_END <- as.Date(salary_history$SAL_END, origin = "1900-01-01")
 
 con <- dbConnect(MySQL(), user='root', password='n', dbname='project', host='localhost')
 
