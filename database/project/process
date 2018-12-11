@@ -11,7 +11,8 @@
 8 fixed datetime field inv_date in invoice
 9 fixed datetime field sal_from in salary_history
 10 fixed datetime field sal_end in salary history
-11 cleaned data in sal_end defaulting " - " to 1900-01-01
+11 cleaned data in sal_end defaulting " - " to NULL
+12 removed the not null condition from the constraints for the sal_end column in salary_history
 
 ?? fucking look at vend zip and other zips too i guess
 ?? need to create primary keys for tables that dont have one
