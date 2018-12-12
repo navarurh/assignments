@@ -707,6 +707,16 @@ select * from product where prod_price > 50;
 3 rows in set (0.00 sec)
 
 --    b. What is total value of our entire inventory on hand?
+
+select sum(prod_qoh*prod_price) as total_inventory_cost from product;
+
++----------------------+
+| total_inventory_cost |
++----------------------+
+|               359198 |
++----------------------+
+1 row in set (0.00 sec)
+
 --    c. How many customers do we presently have and what is the total of all customer balances?
 
 select count(*) as no_of_customers from customer;
