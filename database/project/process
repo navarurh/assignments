@@ -13,6 +13,8 @@
 10 fixed datetime field sal_end in salary history
 11 cleaned data in sal_end defaulting " - " to NULL
 12 removed the not null condition from the constraints for the sal_end column in salary_history
+13 There are no invoices with more than one line item which is very very weird
+14 There are no sales beyond jan2014 so the 4th question gives a zero output
 
 ?? fucking look at vend zip and other zips too i guess
 ?? need to create primary keys for tables that dont have one

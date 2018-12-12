@@ -23,7 +23,9 @@ employee <- d4[c(1,2,3,4,5,6,7,8,12)]
 employee <- unique(employee)
 invoice <- d1[c(13,16,2,9,15)]
 invoice <- unique(invoice)
-line <- d1[c(13,11,7,4,1)]
+line1 <- d1[c(13,11,7,4,1)]
+line2 <- d2[c(12,13,14,15,16)]
+line <- rbind(line1,line2)
 line <- unique(line)
 product <- d3[c(1,4,5,17,7,11,14,16,12)]
 product <- unique(product)
@@ -47,6 +49,16 @@ salary_history$SAL_END <- as.Date(salary_history$SAL_END, origin = "1900-01-01")
 
 con <- dbConnect(MySQL(), user='root', password='n', dbname='project', host='localhost')
 
+# dbWriteTable(con, name='brand', brand, overwrite=T, row.names = F)
+# dbWriteTable(con, name='customer', customer, overwrite=T, row.names = F)
+# dbWriteTable(con, name='department', department, overwrite=T, row.names = F)
+# dbWriteTable(con, name='employee', employee, overwrite=T, row.names = F)
+# dbWriteTable(con, name='invoice', invoice, overwrite=T, row.names = F)
+# dbWriteTable(con, name='line', line, overwrite=T, row.names = F)
+# dbWriteTable(con, name='product', product, overwrite=T, row.names = F)
+# dbWriteTable(con, name='salary_history', salary_history, overwrite=T, row.names = F)
+# dbWriteTable(con, name='supplies', supplies, overwrite=T, row.names = F)
+# dbWriteTable(con, name='vendor', vendor, overwrite=T, row.names = F)
 dbWriteTable(con, name='brand', brand, append=T, row.names = F)
 dbWriteTable(con, name='customer', customer, append=T, row.names = F)
 dbWriteTable(con, name='department', department, append=T, row.names = F)
