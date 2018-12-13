@@ -67,8 +67,7 @@ CREATE TABLE IF NOT EXISTS  line
     line_num    bigint(4)   not null,
     prod_sku    text(15),
     line_qty    bigint(8)   not null,
-    line_price  decimal(16) not null,
-    PRIMARY KEY (line_num)
+    line_price  decimal(16) not null
 );
 
 CREATE TABLE IF NOT EXISTS  product
@@ -82,7 +81,6 @@ CREATE TABLE IF NOT EXISTS  product
     prod_qoh        decimal(16) not null,
     prod_min        decimal(16) not null,
     brand_id        bigint(4)   not null
---    PRIMARY KEY (line_num),
 );
 
 CREATE TABLE IF NOT EXISTS  salary_history
@@ -111,27 +109,51 @@ CREATE TABLE IF NOT EXISTS  vendor
 );
 
 
+
+
+ALTER TABLE product
+MODIFY COLUMN prod_sku varchar(255);
+ALTER TABLE product
+ADD PRIMARY KEY (prod_sku);
+ALTER TABLE product
+ADD FOREIGN KEY (brand_id) REFERENCES brand(brand_id);
+
+
 ALTER TABLE department
 ADD FOREIGN KEY (supv_emp_num) REFERENCES employee(emp_num);
 
+
 ALTER TABLE employee
 ADD FOREIGN KEY (dept_num) REFERENCES department(dept_num);
+
 
 ALTER TABLE invoice
 ADD FOREIGN KEY (cust_code) REFERENCES customer(cust_code),
 ADD FOREIGN KEY (emp_num) REFERENCES employee(emp_num);
 
+
+ALTER TABLE line
+MODIFY COLUMN prod_sku varchar(255);
+ALTER TABLE line
+ADD PRIMARY KEY (prod_sku,inv_num);
 ALTER TABLE line
 ADD FOREIGN KEY (inv_num) REFERENCES invoice(inv_num);
 
-ALTER TABLE product
-ADD FOREIGN KEY (brand_id) REFERENCES brand(brand_id);
 
+ALTER TABLE salary_history
+ADD PRIMARY KEY (emp_num,sal_from);
 ALTER TABLE salary_history
 ADD FOREIGN KEY (emp_num) REFERENCES employee(emp_num);
 
+
+ALTER TABLE supplies
+MODIFY COLUMN prod_sku varchar(255);
+ALTER TABLE supplies
+ADD PRIMARY KEY (prod_sku);
 ALTER TABLE supplies
 ADD FOREIGN KEY (vend_id) REFERENCES vendor(vend_id);
+ALTER TABLE supplies
+ADD FOREIGN KEY (prod_sku) REFERENCES product(prod_sku);
 
 
 

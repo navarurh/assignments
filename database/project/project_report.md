@@ -3,7 +3,7 @@ Name - Navarurh Kumar
 NetID - NXK180010
 Date - 12/11/2018
 
-**Objective** – Utilize data and gain information based on business questions.
+**Objective** – Answer business questions by utilizing provided data to gain information.
 
 ---
 
@@ -11,7 +11,7 @@ Date - 12/11/2018
 ###<center>**Technology Used**</center>
 1. Operating System – Ubuntu 16.04 LTS
 2. Database – MySQL
-3. Languages – Python(for data cleaning), R(for data cleaning and data loading to MySQL)
+3. Languages – Python2.7(for data cleaning), R(for data cleaning and data loading to MySQL)
 4. Editors - Markdown (for the final report)
 ---
 ###<center>**Overall Process Flow**</center>
@@ -43,14 +43,15 @@ Date - 12/11/2018
 		- <span style="color:red">`sal_end` had rows with ` - ` as the data in it was defaulted to `NA` in R and consequently `NULL` in MySQL
 		- There was a column constraint on `sal_end` where it was not allowed to hold  `NULL` values
 			- <span style="color:red">Removed said table constraint when creating the table as there were quite a few rows with `NULL` data in them
+		- Created the following primary keys 
+			- In table `salary history`: <span style="color:red">`emp_num,sal_from`</span>
+			- In table `supplies`: <span style="color:red">`prod_sku`</span>
+			- In table `line`: <span style="color:red">`inv_num, prod_sku`</span>
 	- We can now move on to answering the query questions and the prediction analysis
 
 
-- **ER Diagram**
-![ER DIagram](/home/navarurh/documents/assignments/database/project/erd.png)
-
 - **Exploratory Data Analysis**
-> The EDA helps in understanding the data and quickly validating more complex queries based on the characteristic numbers related to the database tables that  it reveals. 
+> The EDA reveals characteristic numbers related to the database, helping in understanding the data and quickly validating more complex queries. 
 	- Table: `brand`
 		- There are 9 unique brands
 		- The split is on `brand_type` - 4 contractors, 2 Premium and 3 Value
@@ -82,6 +83,32 @@ Date - 12/11/2018
 	- Table: `vendor`
 		- There are 22 unique vendors in the database
 		- There are 3 vendors from each Philadelphia, Michigan and Vermont with most other states having a single vendor
+		
+One of the big findings here was that there are certain `prod_sku`'s that are present in the `line` table but do not exist in the `product` table. A list is provided below - 
+```
+select distinct(prod_sku) from line where prod_sku not in (select prod_sku from product);
+```
+
+*4 rows in set (0.00 sec)
+Displaying all rows*
+
+| prod_sku |
+|----------|
+| 2233-GJH |
+| 3393-AZQ |
+| 5379-BLX |
+| 6358-UST |
+
+<span style="color:red">So we see that there are 25 product SKUs that are not present in the `product` table but have an entry made against them in the `line` table.
+
+
+- **ER Diagram**
+
+Based on our EDA we see that there is no clear connection between the `line` and `product` tables leading to a split ERD with 2 silos.
+
+![ER DIagram](/home/navarurh/documents/assignments/database/project/erd.png)
+
+
 
 <div style="page-break-after: always;"></div>
 ###<center>**Query Questions and Solutions**</center>
@@ -123,7 +150,7 @@ Displaying first 10 rows*
 
 
 
----
+<div style="page-break-after: always;"></div>
 
 #####2.  Write a query to display the starting salary for each employee. The starting salary would be the entry in the salary history with the oldest salary start date for each employee. Sort the output by employee number.
 ```
@@ -152,6 +179,7 @@ order by b.emp_num;
 *363 rows in set (0.12 sec)
 Displaying first 10 rows*
 
+
 | employee_number | employee_first_name | employee_last_name | first_salary |
 |-----------------|---------------------|--------------------|--------------|
 |           83304 | TAMARA              | MCDONALD           |        19770 |
@@ -173,7 +201,8 @@ Displaying first 10 rows*
 #####3.  Write a query to display the invoice number, line numbers, product SKUs, product descriptions, and brand ID for sales of sealer and top coat products of the same brand on the same invoice. 
 
 
-```select
+```
+select
 distinct
 l1.inv_num,
 l1.line_num,
@@ -193,6 +222,8 @@ and p2.prod_category = 'Top Coat'
 and p1.brand_id = p2.brand_id;
 ```
 *Empty set (0.00 sec)*
+
+<div style="page-break-after: always;"></div>
 
 
 #####4.  The Binder Prime Company wants to recognize the employee who sold the most of their products during a specified period.  Write a query to display the employee number, employee first name, employee last name, e-mail address, and total units sold for the employee who sold the most Binder Prime brand products between November 1, 2015, and December 5, 2015. If there is a tie for most units sold, sort the output by employee last name. 
@@ -238,7 +269,7 @@ where y.line_tot =
     and a.inv_date <= '2015-12-05'
     group by a.emp_num
 )x
-)
+);
 ```
 *Empty set (0.01 sec)*
 
@@ -260,6 +291,8 @@ where a.cust_code in
 and b.emp_num = 83677;
 ```
 *Empty set (0.00 sec)*
+
+<div style="page-break-after: always;"></div>
 
 
 #####6.  LargeCo is planning a new promotion in Alabama (AL) and wants to know about the largest purchases made by customers in that state. Write a query to display the customer code, customer first name, last name, full address, invoice date, and invoice total of the largest purchase made by each customer in Alabama. Be certain to include any customers in Alabama who have never made a purchase (their invoice dates should be NULL and the invoice totals should display as 0). 
@@ -308,6 +341,8 @@ Displaying first 10 rows and an 11th row with null invoice total data*
 |       393 | FOSTER     | BERNAL     | 1299 EAST 3RD AVENUE, Birmingham, AL, 35280         | NULL                |         0 |
 
 
+<div style="page-break-after: always;"></div>
+
 
 #####7.  One of the purchasing managers is interested in the impact of product prices on the sale of products of each brand. Write a query to display the brand name, brand type, average price of products of each brand, and total units sold of products of each brand. Even if a product has been sold more than once, its price should only be included once in the calculation of the average price. However, you must be careful because multiple products of the same brand can have the same price, and each of those products must be included in the calculation of the brand’s average price.
 ```
@@ -335,15 +370,22 @@ left join
 on a.brand_id = y.brand_id
 where y.total_sold is not null;
 ```
-*3 rows in set (0.00 sec)
+*9 rows in set (0.00 sec)
 Displaying all rows*
 
 | brand_name        | brand_type | avg_price | total_sold |
 |-------------------|------------|-----------|------------|
-| STUTTENFURST      | CONTRACTOR |   16.4815 |          2 |
-| OLDE TYME QUALITY | CONTRACTOR |   18.4074 |          5 |
-| LONG HAUL         | CONTRACTOR |   20.2195 |         13 |
+| FORESTERS BEST    | VALUE      |   21.0000 |        221 |
+| STUTTENFURST      | CONTRACTOR |   16.4815 |        385 |
+| HOME COMFORT      | CONTRACTOR |   21.8889 |        466 |
+| OLDE TYME QUALITY | CONTRACTOR |   18.4074 |        398 |
+| BUSTERS           | VALUE      |   22.6800 |        479 |
+| LONG HAUL         | CONTRACTOR |   20.2195 |        665 |
+| VALU-MATTE        | VALUE      |   16.8333 |        312 |
+| BINDER PRIME      | PREMIUM    |   16.1481 |        377 |
+| LE MODE           | PREMIUM    |   19.2500 |        561 |
 
+<div style="page-break-after: always;"></div>
 
 #####8.  The purchasing manager is still concerned about the impact of price on sales. Write a query to display the brand name, brand type, product SKU, product description, and price of any products that are not a premium brand, but that cost more than the most expensive premium brand products.
 ```
@@ -373,7 +415,6 @@ Dsiplaying all rows*
 |------------|------------|----------|--------------------------------------------|------------|
 | LONG HAUL  | CONTRACTOR | 1964-OUT | Fire Resistant Top Coat, for Interior Wood |         78 |
 
-
 #####9.  Using SQL descriptive statistics functions calculate the value of the following items: 
 #####9a. What are the products that have a price greater than $50?
 ```
@@ -392,12 +433,17 @@ Displaying all rows*
 ```
 select sum(prod_qoh*prod_price) as total_inventory_cost from product;
 ```
+
+<span style="color:red">This is with the express assumption that `prod_qoh` means "product quantity on hand". </span>
+
 *1 row in set (0.00 sec)
 Displaying all rows*
 
 | total_inventory_cost |
 |----------------------|
 |               359198 |
+
+<div style="page-break-after: always;"></div>
 
 
 #####9c. How many customers do we presently have and what is the total of all customer balances?
@@ -451,8 +497,91 @@ Displaying all rows*
 
 <div style="page-break-after: always;"></div>
 
-###<center>**Regression Analysis for Sales Prediction**</center>
+###<center>**Predictive Analysis for Revenue**</center>
 
+**Objective - Predict the revenue for the next year using the data provided**
+
+**Process**
+The task is to predict the revenue that the firm will generate in the next year based on the data we have. The process will involve determining the best approach to solve the problem and to provide an easy to understand representation of the prediction.
+
+- Looking at the data we can tell that it is a time series problem revolving around revenue that the firm generates
+- The first step then is to find the running revenue totals for the given time period - 14th Feb 2013 to 18th Jan 2014
+- The total income from invoices is aggregate on a day level to find the earnings for each day
+	- `ts_ <- aggregate(data=ts,FUN=sum,inv_total~inv_date)`
+- Then we calculate a cumulative sum to find out the exact revenue numbers [assuming that initial revenue was 0 prior to 14th Feb 2013]
+	- `ts_$revenue <- cumsum(ts_$inv_total)`
+- This finishes our dataset creation with `inv_date` and `revenue` as the required columns
+- Next we move on to running the KPSS tests on revenue to see where it is stationary
+	- We find that the revenue data is **level stationary** at second differences 
+
+```
+kpss.test(diff(diff(ts_$revenue)),null="Level")
+
+	KPSS Test for Trend Stationarity
+
+data:  diff(diff(ts_$revenue))
+KPSS Trend = 0.077812, Truncation lag parameter = 3, p-value = 0.1
+
+Warning message:
+In kpss.test(diff(diff(ts_$revenue)), null = "Trend") :
+  p-value greater than printed p-value
+```
+
+- The plot for revenue over time is as follows:
+	
+![Revenue vs Time](/home/navarurh/documents/assignments/database/project/revenue_plot.png)
+
+<div style="page-break-after: always;"></div>
+
+- The plot for second differences of revenue showing stationarity is as follows:
+
+![Revenue First Differences vs Time](/home/navarurh/documents/assignments/database/project/revenue_plot_timeseries_diffs.png)
+
+- Next we run an ARIMA model deciding on AR, Diffs and MA values using `auto.arima` in R and plot the prediction for the next 365 days
+
+	
+```
+#creating an ARIMA
+library(forecast)
+auto.arima(ts_$revenue)
+model <- arima(ts_$revenue,c(0,2,1))
+#setting prediction steps for 365 days
+steps <- 365
+#predicting the next 365 days of revenue
+future <- forecast(model,h=steps)
+#plot for predicted revenue
+plot(future)
+```
+
+<div style="page-break-after: always;"></div>
+
+- The forecast plot looks like this 
+![Revenue Forecast](/home/navarurh/documents/assignments/database/project/forecastarima.png)
+
+ - The following table gives us the lower and upper limits for the 80% and 95% confidence intervals [please not that predictions are only being shown for revenue on the first of every month instead of all 365 days of the next year]
+ 
+| Prediction Date | Lower 80% Prediction | Higher 80% Prediction | Lower 95% Prediction | Higher 95% Prediction |
+|-----------------|----------------------|-----------------------|----------------------|-----------------------|
+| 2014-02-01      |            $296053.42 |              $303286.10 |            $294139.05 |             $305200.47 |
+| 2014-03-01      |            $338037.38 |             $361491.53 |            $331829.44 |             $367699.47 |
+| 2014-04-01      |            $381666.37 |             $428786.52 |            $369194.42 |             $441258.47 |
+| 2014-05-01      |             $421564.50 |             $496234.17 |            $401800.63 |             $515998.03 |
+| 2014-06-01      |            $460740.06 |             $567982.57 |            $432354.68 |             $596367.95 |
+| 2014-07-01      |            $496887.62 |             $639180.79 |             $459224.90 |             $676843.51 |
+| 2014-08-01      |            $532585.19 |             $714407.19 |            $484459.82 |             $762532.56 |
+| 2014-09-01      |            $566731.59 |             $791184.76 |            $507322.43 |             $850593.93 |
+| 2014-10-01      |            $598399.09 |             $866863.04 |            $527340.97 |             $937921.16 |
+| 2014-11-01      |             $629783.30 |             $946402.81 |            $545979.18 |            $1030206.93 |
+| 2014-12-01      |            $658927.44 |            $1024604.44 |            $562138.59 |             $1121393.30 |
+| 2015-01-01      |            $687835.34 |            $1106620.52 |            $576989.59 |            $1217466.26 |
+
+
+####Insights
+- The process shows that the increase in revenue over the last year will follow into the next year
+- There will be a steady 8.66% growth in revenue every month (on average) over the next 12 months
+- We can expect the revenue at the end of the whole year to atleast double in the next 12 months
+ 
+ 
 
 <div style="page-break-after: always;"></div>
 ###<center>**Code Used in the Process Flow**</center>
@@ -474,19 +603,23 @@ o.close
 ```
 setwd("~/documents/assignments/database/project/")
 
+#importing libraries
 library(plyr)
 library(RMySQL)
 
+#reading in datasets
 d1 <- read.csv("datasets/BUAN6320-DataSet1.txt",header = T,stringsAsFactors = F,sep = "\t")
 d2 <- read.csv("datasets/BUAN6320-DataSet2.txt",header = T,stringsAsFactors = F,sep = "\t")
 d3 <- read.csv("datasets/BUAN6320-DataSet3_pytmp.txt",header = T,stringsAsFactors = F,sep = "\t",fileEncoding="utf-8")
 d4 <- read.csv("datasets/BUAN6320-DataSet4.txt",header = T,stringsAsFactors = F,sep = "\t")
 
+#displaying column names for easier subsetting
 colnames(d1)
 colnames(d2)
 colnames(d3)
 colnames(d4)
 
+#subsetting columns to form individual tables and manipulating rows to clean data
 brand <- d3[c(12,2,9)]
 brand <- unique(brand)
 customer <- d1[c(2,3,5,6,8,10,12,14)]
@@ -510,29 +643,24 @@ supplies <- unique(supplies)
 vendor <- d3[c(13,6,3,10,8,15)]
 vendor <- unique(vendor)
 
+#removing duplicated invoice numbers
 invoice <- invoice[!duplicated(invoice$INV_NUM),]
+#removing empty vendor names
 vendor <- vendor[which(vendor$VEND_NAME != ""),]
+#changing employee_id to emp_num in invoices table
 colnames(invoice)[5] <- "EMP_NUM"
-
+#reformatting dates into the proper YYYY-MM-DD format
 employee$EMP_HIREDATE <- as.Date(employee$EMP_HIREDATE, origin = "1900-01-01")
 invoice$INV_DATE <- as.Date(invoice$INV_DATE, origin = "1900-01-01")
 salary_history$SAL_FROM <- as.Date(salary_history$SAL_FROM, origin = "1900-01-01")
+#setting empty sal_end dates to null in salary_history table
 salary_history$SAL_END[which(salary_history$SAL_END == " - ")] <- NA
 salary_history$SAL_END <- as.integer(salary_history$SAL_END)
 salary_history$SAL_END <- as.Date(salary_history$SAL_END, origin = "1900-01-01")
 
+#pushing data to mysql
 con <- dbConnect(MySQL(), user='root', password='n', dbname='project', host='localhost')
 
-# dbWriteTable(con, name='brand', brand, overwrite=T, row.names = F)
-# dbWriteTable(con, name='customer', customer, overwrite=T, row.names = F)
-# dbWriteTable(con, name='department', department, overwrite=T, row.names = F)
-# dbWriteTable(con, name='employee', employee, overwrite=T, row.names = F)
-# dbWriteTable(con, name='invoice', invoice, overwrite=T, row.names = F)
-# dbWriteTable(con, name='line', line, overwrite=T, row.names = F)
-# dbWriteTable(con, name='product', product, overwrite=T, row.names = F)
-# dbWriteTable(con, name='salary_history', salary_history, overwrite=T, row.names = F)
-# dbWriteTable(con, name='supplies', supplies, overwrite=T, row.names = F)
-# dbWriteTable(con, name='vendor', vendor, overwrite=T, row.names = F)
 dbWriteTable(con, name='brand', brand, append=T, row.names = F)
 dbWriteTable(con, name='customer', customer, append=T, row.names = F)
 dbWriteTable(con, name='department', department, append=T, row.names = F)
@@ -617,8 +745,7 @@ CREATE TABLE IF NOT EXISTS  line
     line_num    bigint(4)   not null,
     prod_sku    text(15),
     line_qty    bigint(8)   not null,
-    line_price  decimal(16) not null,
-    PRIMARY KEY (line_num)
+    line_price  decimal(16) not null
 );
 
 CREATE TABLE IF NOT EXISTS  product
@@ -632,7 +759,6 @@ CREATE TABLE IF NOT EXISTS  product
     prod_qoh        decimal(16) not null,
     prod_min        decimal(16) not null,
     brand_id        bigint(4)   not null
---    PRIMARY KEY (line_num),
 );
 
 CREATE TABLE IF NOT EXISTS  salary_history
@@ -661,33 +787,133 @@ CREATE TABLE IF NOT EXISTS  vendor
 );
 
 
+
+
+ALTER TABLE product
+MODIFY COLUMN prod_sku varchar(255);
+ALTER TABLE product
+ADD PRIMARY KEY (prod_sku);
+ALTER TABLE product
+ADD FOREIGN KEY (brand_id) REFERENCES brand(brand_id);
+
+
 ALTER TABLE department
 ADD FOREIGN KEY (supv_emp_num) REFERENCES employee(emp_num);
 
+
 ALTER TABLE employee
 ADD FOREIGN KEY (dept_num) REFERENCES department(dept_num);
+
 
 ALTER TABLE invoice
 ADD FOREIGN KEY (cust_code) REFERENCES customer(cust_code),
 ADD FOREIGN KEY (emp_num) REFERENCES employee(emp_num);
 
+
+ALTER TABLE line
+MODIFY COLUMN prod_sku varchar(255);
+ALTER TABLE line
+ADD PRIMARY KEY (prod_sku,inv_num);
 ALTER TABLE line
 ADD FOREIGN KEY (inv_num) REFERENCES invoice(inv_num);
 
-ALTER TABLE product
-ADD FOREIGN KEY (brand_id) REFERENCES brand(brand_id);
 
+ALTER TABLE salary_history
+ADD PRIMARY KEY (emp_num,sal_from);
 ALTER TABLE salary_history
 ADD FOREIGN KEY (emp_num) REFERENCES employee(emp_num);
 
+
+ALTER TABLE supplies
+MODIFY COLUMN prod_sku varchar(255);
+ALTER TABLE supplies
+ADD PRIMARY KEY (prod_sku);
 ALTER TABLE supplies
 ADD FOREIGN KEY (vend_id) REFERENCES vendor(vend_id);
-
+ALTER TABLE supplies
+ADD FOREIGN KEY (prod_sku) REFERENCES product(prod_sku);
 ```
 
 
 ##### The script for the predictive analysis is as follows
 ```
-Put in R Code for regression analysis here
+#This code follows from the previous R-code for generating the datasets, the dataframe names and columns being used are the same and this code can be executed in continuation from where the previous code left off
+
+#time series analysis
+library(ggplot2)
+library(tseries)
+
+#subsetting invoice table into an analytical dataset
+ts <- invoice[c(2,4)]
+ts <- ts[order(ts$INV_DATE),]
+colnames(ts) <- c("inv_date","inv_total")
+#aggregating the invoice totals on a day level
+ts_ <- aggregate(data=ts,FUN=sum,inv_total~inv_date)
+#talking a cumulative sum of invoice totals on a day level to generate the running revenue field
+ts_$revenue <- cumsum(ts_$inv_total)
+
+#testing revenue data to check where it is stationary
+kpss.test(ts_$revenue,null="Level")
+kpss.test(ts_$revenue,null="Trend")
+kpss.test(diff(ts_$revenue),null="Level")
+kpss.test(diff(ts_$revenue),null="Trend")
+kpss.test(diff(diff(ts_$revenue)),null="Level")
+kpss.test(diff(diff(ts_$revenue)),null="Trend")
+
+#making a time series plot to check revenue data being stationary
+plt_rev <- ggplot(ts_, aes(x=inv_date, y=revenue, group=1)) + 
+  geom_line() + 
+  xlab('Invoice Date') + 
+  ylab('Revenue (in $)') + 
+  theme_bw() + 
+  ggtitle('Revenue Plot') +
+  scale_x_date(date_breaks = "2 months") +
+  scale_y_continuous(labels = scales::comma, breaks=c(0,50000,100000,150000,200000,250000,300000))
+plt_rev
+
+revdiffs <- diff(diff(ts_$revenue))
+dates <- ts_$inv_date[3:275]
+
+df1 <- as.data.frame(cbind(dates,revdiffs))
+df1$dates <- as.Date(df1$dates,origin = '1970-01-01')
+
+plt_rev_diff <- ggplot(data = df1,aes(x=dates, y=revdiffs, group=1)) + 
+  geom_line() + 
+  xlab('Invoice Date') + 
+  ylab('Revenue Diffs (in $)') + 
+  theme_bw() + 
+  ggtitle('Revenue Second Differences vs Time') +
+  scale_x_date(date_breaks = "2 months") +
+  scale_y_continuous(labels = scales::comma, breaks=c(0,50000,100000,150000,200000,250000,300000))
+plt_rev_diff
+
+#creating an ARIMA
+library(forecast)
+auto.arima(ts_$revenue)
+model <- arima(ts_$revenue,c(0,2,1))
+#setting prediction steps for 365 days
+steps <- 365
+#predicting the next 365 days of revenue
+future <- forecast(model,h=steps)
+#plot for predicted revenue
+plot(future)
+fcast <- as.data.frame(cbind(future$lower,future$upper))
+fcast$date <- seq.Date(from = max(ts_$inv_date)+1,to = max(ts_$inv_date)+365,by = "day")
+fcast <- fcast[c(5,1,3,2,4)]
+fcast$`future$lower.80%` <- round(fcast$`future$lower.80%`,2)
+fcast$`future$upper.80%` <- round(fcast$`future$upper.80%`,2)
+fcast$`future$lower.95%` <- round(fcast$`future$lower.95%`,2)
+fcast$`future$upper.95%` <- round(fcast$`future$upper.95%`,2)
+colnames(fcast) <- c("Prediction Date","Lower 80% Prediction","Higher 80% Prediction","Lower 95% Prediction", "Higher 95% Prediction")
+dbWriteTable(con, name='forecasts', fcast, append=T, row.names = F)
+fcst <- fcast
+fcst$`Prediction Date` <- as.character(fcst$`Prediction Date`)
+fcst <- fcst[which(substr(fcst$`Prediction Date`,9,10) == '01'),]
+fcst$avrev <- (fcst$`Lower 95% Prediction`+fcst$`Higher 95% Prediction`)/2
+fcst$diff <- 0
+fcst$diff[2:12] <- diff(fcst$avrev)
+fcst$pinc <- fcst$diff/fcst$avrev*100
+mean(fcst$pinc)
+
 ```
 

@@ -656,9 +656,15 @@ where y.total_sold is not null;
 +-------------------+------------+-----------+------------+
 | brand_name        | brand_type | avg_price | total_sold |
 +-------------------+------------+-----------+------------+
-| STUTTENFURST      | CONTRACTOR |   16.4815 |          2 |
-| OLDE TYME QUALITY | CONTRACTOR |   18.4074 |          5 |
-| LONG HAUL         | CONTRACTOR |   20.2195 |         13 |
+| FORESTERS BEST    | VALUE      |   21.0000 |        221 |
+| STUTTENFURST      | CONTRACTOR |   16.4815 |        385 |
+| HOME COMFORT      | CONTRACTOR |   21.8889 |        466 |
+| OLDE TYME QUALITY | CONTRACTOR |   18.4074 |        398 |
+| BUSTERS           | VALUE      |   22.6800 |        479 |
+| LONG HAUL         | CONTRACTOR |   20.2195 |        665 |
+| VALU-MATTE        | VALUE      |   16.8333 |        312 |
+| BINDER PRIME      | PREMIUM    |   16.1481 |        377 |
+| LE MODE           | PREMIUM    |   19.2500 |        561 |
 +-------------------+------------+-----------+------------+
 3 rows in set (0.00 sec)
 
@@ -755,3 +761,40 @@ limit 3;
 | NC         |            19305 |
 +------------+------------------+
 3 rows in set (0.04 sec)
+
+
+
+
+
+
+mysql> select prod_sku from line where prod_sku not in (select prod_sku from product);
++----------+
+| prod_sku |
++----------+
+| 5379-BLX |
+| 3393-AZQ |
+| 6358-UST |
+| 6358-UST |
+| 3393-AZQ |
+| 2233-GJH |
+| 5379-BLX |
+| 5379-BLX |
+| 3393-AZQ |
+| 2233-GJH |
+| 2233-GJH |
+| 5379-BLX |
+| 2233-GJH |
+| 5379-BLX |
+| 2233-GJH |
+| 2233-GJH |
+| 5379-BLX |
+| 6358-UST |
+| 6358-UST |
+| 6358-UST |
+| 3393-AZQ |
+| 5379-BLX |
+| 6358-UST |
+| 3393-AZQ |
+| 5379-BLX |
++----------+
+25 rows in set (0.00 sec)
