@@ -40,3 +40,4 @@ Thumbs.db
 #pycharm
 
 .idea
+*.pyc
