@@ -65,6 +65,13 @@ for name in names:
 infobox_table = pd.DataFrame(infobox)
 
 
+
+
+
+
+
+
+
 with open('noinfobox.csv', 'w') as f:
     writer = csv.writer(f)
     for val in noinfobox:
