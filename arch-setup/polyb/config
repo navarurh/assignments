@@ -1,0 +1,21 @@
+;=====================================================
+;     File Includes
+;=====================================================
+
+[section/base]
+include-file = /home/navarurh/.config/polybar/master.conf
+include-file = /home/navarurh/.config/polybar/modules.conf
+
+;=====================================================
+;     i3 Bars
+;=====================================================
+
+[bar/i3-bar]
+inherit = bar/master
+
+; Use $ xrandr -q | grep " connected" | cut -d ' ' -f1
+monitor = eDP1
+
+modules-left   = i3 menu
+modules-center = clock
+modules-right  = ${env:POLYBAR_MODULES:coreuse temperature memory pkg network volume}
