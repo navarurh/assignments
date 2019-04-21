@@ -303,7 +303,7 @@ exec --no-startup-id i3-msg workspace $WS1
 ###################################################
 
 #dpi setter
-exec --no-startup-id xrandr --dpi 80
+exec --no-startup-id dpiset
 
 #redshift startup
 exec --no-startup-id redshift -O 3000
